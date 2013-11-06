@@ -20,10 +20,10 @@ object Perceptron {
       train(wVec, key, label)
     }
 
-    val last = stream.take(1000).last
-    println(last)
+    val wVec = stream(1000)
+    println(wVec)
     trainData.foreach{
-      case (input, label) => println(predict(last, input) * label)
+      case (input, label) => println(predict(wVec, input) * label >= 0)
     }
   }
 
