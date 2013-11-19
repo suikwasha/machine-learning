@@ -3,11 +3,8 @@ package com.suikwasha.machinelearning.parceptron
 import scala.util.Random
 import scala.io.Source
 import java.io.File
+import com.suikwasha.machinelearning.Machine
 
-trait Machine {
-  def predict(wVec: Seq[Double], xVec: Seq[Double]): Double
-  def train(wVec: Seq[Double], xVec: Seq[Double], label: Double): Seq[Double]
-}
 
 object Perceptron extends Machine {
   def main(args: Array[String]) = {
