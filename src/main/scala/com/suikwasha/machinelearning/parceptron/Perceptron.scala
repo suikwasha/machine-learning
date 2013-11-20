@@ -1,12 +1,10 @@
 package com.suikwasha.machinelearning.parceptron
 
 import scala.util.Random
-import scala.io.Source
-import java.io.File
 import com.suikwasha.machinelearning.Machine
+import com.suikwasha.machinelearning.Vector
 
-
-object Perceptron extends Machine {
+object Perceptron {
   def main(args: Array[String]) = {
 
     // AND
@@ -30,8 +28,12 @@ object Perceptron extends Machine {
       case (input, label) => println(predict(wVec, input) * label >= 0)
     }
   }
+}
 
-  def predict(wVec: Seq[Double], xVec: Seq[Double]): Double = wVec.zip(xVec).map(t => t._1 * t._2).reduce(_ + _)
+
+class Perceptron (val wVec: Vector) extends Machine {
+
+  def predict(vec: Vector): Double = (wVec * vec).reduce(_ + _)
 
   val C = 0.2
 
@@ -44,22 +46,3 @@ object Perceptron extends Machine {
     }
 }
 
-object IrisWithPerceptron {
-  def main(args: Array[String]) = {
-    val file = new File("src/main/resources/Fisher.csv")
-    val source = Source.fromFile(file)
-    val data = source.getLines.toSeq.tail.map(_.split(",")).map(_.map(_.toDouble))
-
-
-    val ans = data.foldLeft(Seq(1.0, -0.5, -0.5, -0.5, -0.5)){ (wVec, line) =>
-      Perceptron.train(wVec, 1.0 +: line.tail, line.head)
-    }
-
-    println(ans)
-    data.foreach{ line =>
-      val t = line.head
-      val g = line.tail
-      println(Perceptron.predict(ans, g))
-    }
-  }
-}
