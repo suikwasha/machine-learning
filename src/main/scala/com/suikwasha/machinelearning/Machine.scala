@@ -1,29 +1,24 @@
 package com.suikwasha.machinelearning
 
-import scala.collection.SeqProxy
-
-/**
- * Created with IntelliJ IDEA.
- * User: suikwasha
- * Date: 2013/11/19
- * Time: 22:59
- * To change this template use File | Settings | File Templates.
- */
 trait Machine {
   def predict(vec: Vector): Double
-  def train(vec: Vector, label: Double): Machine = {
-    val v = Vector(1.0)
-    null
-  }
+  def train(vec: Vector, label: Double): Machine
+  def show(): Unit
 }
 
-case class Vector(elems: Double *) extends Seq[Double](elems: _*) {
+case class Vector(elems: Double *) {
 
-  def length: Int = elems.length
+  lazy val length: Int = elems.length
 
-  def iterator: Iterator[Double] = elems.iterator
+  def dot (vec: Vector): Double = {
+    require(vec.length == length)
+    elems.zip(vec.elems).map(t => t._1 * t._2).reduce(_ + _)
+  }
 
-  private def op (vec: Vector)(f: ((Double, Double)) => Double) = elems.zip(vec.elems).map(f)
+  def * (n: Double): Vector = Vector(elems.map(_ * n): _*)
 
-  def * (vec: Vector): Vector = op(vec)(t => t._1 * t._2)
+  def + (vec: Vector): Vector = {
+    require(vec.length == length)
+    Vector(elems.zip(vec.elems).map(t => t._1 + t._2): _*)
+  }
 }

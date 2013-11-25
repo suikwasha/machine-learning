@@ -1,48 +1,92 @@
 package com.suikwasha.machinelearning.parceptron
 
-import scala.util.Random
 import com.suikwasha.machinelearning.Machine
 import com.suikwasha.machinelearning.Vector
 
-object Perceptron {
+object OR {
+
+  val trainData = Array[Data](
+    Data(Vector(0.0, 0.0, 1.0), -1.0),
+    Data(Vector(0.0, 1.0, 1.0),  1.0),
+    Data(Vector(1.0, 0.0, 1.0),  1.0),
+    Data(Vector(1.0, 1.0, 1.0),  1.0)
+  )
+
   def main(args: Array[String]) = {
+    val stream = Stream.continually(trainData.toStream).flatten
 
-    // AND
-    val trainData = Map[Seq[Double], Double](
-      Seq(0.0, 0.0, 1.0) -> -1.0,
-      Seq(0.0, 1.0, 1.0) -> 1.0,
-      Seq(1.0, 0.0, 1.0) -> 1.0,
-      Seq(1.0, 1.0, 1.0) -> 1.0
-    )
-
-    val rnd = new Random
-    val stream = Stream.iterate(Seq(-0.5, 0.5, 0.2)){ wVec =>
-      val key: Seq[Double] = Seq(rnd.nextInt(2), rnd.nextInt(2), 1.0)
-      val label = trainData.get(key).get
-      train(wVec, key, label)
+    val machine = stream.take(1000).foldLeft[Machine](new Perceptron(Vector(0.5, 0.5, 1.0))){ (machine, data) =>
+      machine.train(data.input, data.label)
     }
 
-    val wVec = stream(1000)
-    println(wVec)
-    trainData.foreach{
-      case (input, label) => println(predict(wVec, input) * label >= 0)
+    trainData.foreach{ data =>
+      println(machine.predict(data.input) * data.label >= 0)
     }
+    machine.show
   }
 }
 
+object AND {
+
+  val trainData = Array[Data](
+    Data(Vector(0.0, 0.0, 1.0), -1.0),
+    Data(Vector(0.0, 1.0, 1.0), -1.0),
+    Data(Vector(1.0, 0.0, 1.0), -1.0),
+    Data(Vector(1.0, 1.0, 1.0),  1.0)
+  )
+
+  def main(args: Array[String]) = {
+    val stream = Stream.continually(trainData.toStream).flatten
+
+    val machine = stream.take(2000).foldLeft[Machine](new Perceptron(Vector(0.5, 0.5, 0.5))){ (machine, data) =>
+      machine.train(data.input, data.label)
+    }
+
+    trainData.foreach{ data =>
+      println(machine.predict(data.input) * data.label >= 0)
+    }
+    machine.show
+  }
+}
+
+object XOR {
+
+  val trainData = Array[Data](
+    Data(Vector(0.0, 0.0, 1.0), -1.0),
+    Data(Vector(0.0, 1.0, 1.0),  1.0),
+    Data(Vector(1.0, 0.0, 1.0),  1.0),
+    Data(Vector(1.0, 1.0, 1.0), -1.0)
+  )
+
+  def main(args: Array[String]) = {
+    val stream = Stream.continually(trainData.toStream).flatten
+
+    val machine = stream.take(2000).foldLeft[Machine](new Perceptron(Vector(0.5, 0.5, 0.5))){ (machine, data) =>
+      machine.train(data.input, data.label)
+    }
+
+    trainData.foreach{ data =>
+      println(machine.predict(data.input) * data.label >= 0)
+    }
+    machine.show
+  }
+}
+
+case class Data(input: Vector, label: Double)
 
 class Perceptron (val wVec: Vector) extends Machine {
 
-  def predict(vec: Vector): Double = (wVec * vec).reduce(_ + _)
+  def predict(vec: Vector): Double = wVec dot vec
 
-  val C = 0.2
+  val C = 0.25
 
-  def train(wVec: Seq[Double], xVec: Seq[Double], label: Double): Seq[Double] =
-    if (predict(wVec, xVec) * label < 0) {
-      // wVec + C * label * xVec
-      wVec.zip(xVec.map(_ * C * label)).map(t => t._1 + t._2)
+  def train(vec: Vector, label: Double): Machine =
+    if (predict(vec) * label < 0) {
+      new Perceptron(wVec + (vec * (C * label)))
     } else {
-      wVec
+      new Perceptron(wVec)
     }
+
+  def show(): Unit = println(wVec)
 }
 
