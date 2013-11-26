@@ -21,4 +21,6 @@ case class Vector(elems: Double *) {
     require(vec.length == length)
     Vector(elems.zip(vec.elems).map(t => t._1 + t._2): _*)
   }
+
+  def map(f: (Double) => Double): Vector = Vector(elems.map(f): _*)
 }
